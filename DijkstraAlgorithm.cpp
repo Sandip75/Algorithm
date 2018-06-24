@@ -1,122 +1,93 @@
 #include<bits/stdc++.h>
 using namespace std;
 
-template<typename T>
-class Graph{
-    unordered_map<T, list<pair<T,int> > > m;
 
+class Pair{
 public:
-
-    void addEdge(T u,T v,int dist,bool bidir=true){
-        m[u].push_back(make_pair(v,dist));
-        if(bidir){
-            m[v].push_back(make_pair(u,dist));
-        }
-
+    int dest;
+    int weight;
+    Pair(int v,int wt){
+        dest = v;
+        weight = wt;
     }
-    void printAdj(){
-        //Let try to print the adj list
-        //Iterate over all the key value pairs in the map
-        for(auto j:m){
-
-            cout<<j.first<<"->";
-
-            //Iterater over the list of cities
-            for(auto l: j.second){
-                    cout<<"("<<l.first<<","<<l.second<<")";
-
-            }
-            cout<<endl;
-        }
-
-    }
-    void dijsktraSSSP(T src){
-
-        unordered_map<T,int> dist;
-
-        //Set all distance to infinity
-        for(auto j:m){
-            dist[j.first] = INT_MAX;
-        }
-
-        //Make a set to find a out node with the minimum distance
-        set<pair<int, T> > s;
-
-        dist[src] = 0;
-        s.insert(make_pair(0,src));
-
-        while(!s.empty()){
-
-            //Find the pair at the front.
-            auto p =   *(s.begin());
-            T node = p.second;
-
-            int nodeDist = p.first;
-            s.erase(s.begin());
-
-
-            //Iterate over neighbours/children of the current node
-            for(auto childPair: m[node]){
-
-                if(nodeDist + childPair.second < dist[childPair.first]){
-
-
-                    //In the set updation of a particular is not possible
-                    // we have to remove the old pair, and insert the new pair to simulation updation
-                    T dest = childPair.first;
-                    auto f = s.find( make_pair(dist[dest],dest));
-                    if(f!=s.end()){
-                        s.erase(f);
-                    }
-
-                    //Insert the new pair
-                    dist[dest] = nodeDist + childPair.second;
-                    s.insert(make_pair(dist[dest],dest));
-
-                }
-
-            }
-        }
-        //Lets print distance to all other node from src
-        for(auto d:dist){
-
-            cout<<d.first<<" is located at distance of  "<<d.second<<endl;
-        }
-
-
-    }
-
 };
 
-int main(){
+class myCompare{
+public:
+    bool operator()(Pair p1,Pair p2){
+            return p1.weight < p2.weight;
+    }
+};
+
+
+class Graph{
+    int V;
+    vector<Pair> *adjList;
+
+public:
+    Graph(int v){
+        V=v;
+        adjList = new vector<Pair>[V];
+    }
+    void addEdge(int u,int v,int wt){
+        Pair p(v,wt);
+        adjList[u].push_back(p);
+    }
+
+
+    void dijikstra(int src)
+    {
+        int *D = new int[V+1];
+        for(int i=1;i<=V;i++)
+            D[i]=INT_MAX;
+        D[src]=0;
+
+        priority_queue<Pair,vector<Pair>,myCompare> Q;
+
+        Pair S(src,D[src]);
+        Q.push(S);
+
+        while(!Q.empty())
+        {
+            Pair temp = Q.top();
+            Q.pop();
+            int u = temp.dest;
+            int wt = temp.weight;
+
+            if(D[u]<wt) continue;
+
+            for(int i=0;i<adjList[u].size();i++)
+            {
+                Pair p = adjList[u][i];
+                int v = p.dest;
+                int W = p.weight;
+                if(D[u]+W<D[v])
+                {
+                    D[v] = D[u]+W;
+                    Pair t(v,D[v]);
+                    Q.push(t);
+                }
+            }
+        }
+
+        for(int i=1;i<V;i++)
+            cout<<src<<" - "<<i<<" = "<<D[i]<<"\n";
+    }
+};
+
+
+int main()
+{
+    Graph G(6);
+
+    G.addEdge(1,2,1);
+    G.addEdge(1,3,3);
+    G.addEdge(2,3,1);
+    G.addEdge(3,5,3);
+    G.addEdge(2,4,1);
+    G.dijikstra(1);
 
 
 
-    //Graph<int> g;
-    //g.addEdge(1,2,1);
-    //g.addEdge(1,3,4);
-    g.addEdge(2,3,1);
-    g.addEdge(3,4,2);
-    g.addEdge(1,4,7);
-    //g.printAdj();
-   // g.dijsktraSSSP(1);
-
-
-
-
-    Graph<string> india;
-    india.addEdge("Amritsar","Delhi",1);
-    india.addEdge("Amritsar","Jaipur",4);
-    india.addEdge("Jaipur","Delhi",2);
-    india.addEdge("Jaipur","Mumbai",8);
-    india.addEdge("Bhopal","Agra",2);
-    india.addEdge("Mumbai","Bhopal",3);
-    india.addEdge("Agra","Delhi",1);
-    //india.printAdj();
-    india.dijsktraSSSP("Amritsar");
-
-    cout<<"Sandip kumar"<<endl<<"75"<<endl;
-
-
- return 0;
+    return 0;
 }
