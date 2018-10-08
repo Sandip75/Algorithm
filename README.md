@@ -9,3 +9,9 @@ Linear Search
 Binary Search
 
 LCS
+
+0/1 Knapsack
+
+Insertion sort
+
+huffman coding
